@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1032159350105",
+    "project_id": "homemade-cc271",
+    "storage_bucket": "homemade-cc271.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1032159350105:android:c6c6385bdd6431ead91048",
+        "android_client_info": {
+          "package_name": "com.example.homemade"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAyUogjEPxn3EQRl-9atvgI5j6eO2bcvYY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
