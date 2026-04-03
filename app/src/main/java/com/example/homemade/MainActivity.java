@@ -102,15 +102,15 @@ public class MainActivity extends AppCompatActivity {
         );
 
         btnBrowseProducts.setOnClickListener(v ->
-                startActivity(new Intent(MainActivity.this, BrowseProducts.class))
+                startActivity(new Intent(MainActivity.this,Login.class))
         );
 
         btnJoinSeller.setOnClickListener(v ->
-                startActivity(new Intent(MainActivity.this, JoinSeller.class))
+                startActivity(new Intent(MainActivity.this, rig.class))
         );
 
         tvSeeAll.setOnClickListener(v ->
-                startActivity(new Intent(MainActivity.this, BrowseProducts.class))
+                startActivity(new Intent(MainActivity.this, Login.class))
         );
 
         catFood.setOnClickListener(v -> openCategory("أكل وحلويات"));

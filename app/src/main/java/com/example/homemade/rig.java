@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Patterns;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -22,7 +23,7 @@ import java.util.Map;
 
 public class rig extends AppCompatActivity {
 
-    private TextView tvLogin, tvRegister;
+    private TextView tvLogin, tvRegister,tvLogout;
     private TextInputEditText etEmail, etPassword, etConfirmPassword, etName, etPhone;
     private Button btnLogin;
     private CheckBox cbRememberMe;
@@ -52,6 +53,8 @@ public class rig extends AppCompatActivity {
         etConfirmPassword = findViewById(R.id.confirmPassword);
         etName = findViewById(R.id.name);
         etPhone = findViewById(R.id.phone);
+        tvLogout = findViewById(R.id.tvLogout);
+
 
         // إعداد Spinner
         String[] items = {"بائع", "زبون", "اختر نوع الحساب"};
@@ -156,13 +159,17 @@ public class rig extends AppCompatActivity {
                                 .set(userData)
                                 .addOnSuccessListener(aVoid -> {
                                     Toast.makeText(this, "تم إنشاء الحساب بنجاح!", Toast.LENGTH_SHORT).show();
+                                    Intent myintent = new Intent(rig.this, Userpro.class);
+                                    myintent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                    startActivity(myintent);
+
 
                                     // الانتقال حسب نوع الحساب
                                     Intent intent;
                                     if (accountType.equals("بائع")) {
                                         intent = new Intent(rig.this, JoinSeller.class);
                                     } else {
-                                        intent = new Intent(rig.this, MainActivity.class);
+                                        intent = new Intent(rig.this,Userpro.class);
                                     }
                                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                     startActivity(intent);
@@ -174,6 +181,13 @@ public class rig extends AppCompatActivity {
                     .addOnFailureListener(e ->
                             Toast.makeText(this, "خطأ في إنشاء الحساب: " + e.getMessage(), Toast.LENGTH_SHORT).show()
                     );
+        });
+        tvLogout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent myintent=new Intent(rig.this,MainActivity.class);
+                startActivity(myintent);
+            }
         });
     }
 }

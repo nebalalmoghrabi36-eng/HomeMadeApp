@@ -1,10 +1,198 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".BrowseProducts">
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+    android:orientation="vertical"
+    android:layoutDirection="rtl"
+    android:background="#F5F5F5">
+    <!--  TOOLBAR  -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="#2E7D32"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="المنتجات"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:gravity="right"/>
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            android:tint="#FFFFFF"/>
+    </LinearLayout>
+    <!--  البحث  -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:padding="12dp"
+        android:elevation="2dp">
+        <EditText
+            android:id="@+id/etSearch"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:hint="🔍 ابحث عن منتج..."
+            android:background="@drawable/tab_rounded"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:gravity="right"
+            android:textSize="14sp"
+            android:inputType="text"
+            android:imeOptions="actionSearch"/>
+    </LinearLayout>
+    <!--  فلتر الفئات  -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:paddingBottom="8dp"
+        android:scrollbars="none">
+        <LinearLayout
+            android:id="@+id/llCategories"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp">
+            <TextView
+                android:id="@+id/catAll"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="الكل"
+                android:textSize="13sp"
+                android:textColor="#FFFFFF"
+                android:gravity="center"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/tab_active"
+                android:clickable="true"
+                android:foreground="?attr/selectableItemBackground"/>
+            <TextView
+                android:id="@+id/catFood2"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="🍰 أكل"
+                android:textSize="13sp"
+                android:textColor="#333333"
+                android:gravity="center"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/tab_rounded"
+                android:clickable="true"
+                android:foreground="?attr/selectableItemBackground"/>
+            <TextView
+                android:id="@+id/catAcc2"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="💍 إكسسوارات"
+                android:textSize="13sp"
+                android:textColor="#333333"
+                android:gravity="center"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/tab_rounded"
+                android:clickable="true"
+                android:foreground="?attr/selectableItemBackground"/>
+            <TextView
+                android:id="@+id/catHand2"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="🎨 يدوية"
+                android:textSize="13sp"
+                android:textColor="#333333"
+                android:gravity="center"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/tab_rounded"
+                android:clickable="true"
+                android:foreground="?attr/selectableItemBackground"/>
+            <TextView
+                android:id="@+id/catKids2"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="🧸 أطفال"
+                android:textSize="13sp"
+                android:textColor="#333333"
+                android:gravity="center"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/tab_rounded"
+                android:clickable="true"
+                android:foreground="?attr/selectableItemBackground"/>
+            <TextView
+                android:id="@+id/catGifts2"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="🎁 هدايا"
+                android:textSize="13sp"
+                android:textColor="#333333"
+                android:gravity="center"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/tab_rounded"
+                android:clickable="true"
+                android:foreground="?attr/selectableItemBackground"/>
+            <TextView
+                android:id="@+id/catDecor2"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="🏡 ديكور"
+                android:textSize="13sp"
+                android:textColor="#333333"
+                android:gravity="center"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:background="@drawable/tab_rounded"
+                android:clickable="true"
+                android:foreground="?attr/selectableItemBackground"/>
+        </LinearLayout>
+    </HorizontalScrollView>
+    <!--  عدد النتائج  -->
+    <TextView
+        android:id="@+id/tvResultCount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="جميع المنتجات"
+        android:textColor="#757575"
+        android:textSize="13sp"
+        android:gravity="right"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp"/>
+    <!--  قائمة المنتجات  -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvProducts"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="8dp"
+        android:clipToPadding="false"/>
+    <!--  لو ما في منتجات  -->
+    <TextView
+        android:id="@+id/tvNoProducts"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="لا توجد منتجات في هذه الفئة"
+        android:textColor="#AAAAAA"
+        android:textSize="15sp"
+        android:gravity="center"
+        android:padding="40dp"
+        android:visibility="gone"/>
+</LinearLayout>
