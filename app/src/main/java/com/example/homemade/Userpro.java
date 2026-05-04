@@ -21,7 +21,7 @@ public class Userpro extends AppCompatActivity {
     private TextView tvUserName, tvAccountType, tvEmail, tvPhone, tvLogout, tvNoOrders;
     private ImageView imgProfile;
     private RecyclerView rvOrders;
-    private Button btnOrder;
+    private Button btnOrder, btnitemcart;
 
     // متغيرات Firebase
     private FirebaseAuth mAuth;
@@ -51,6 +51,7 @@ public class Userpro extends AppCompatActivity {
         tvNoOrders = findViewById(R.id.tvNoOrders);
         rvOrders = findViewById(R.id.rvOrders);
         btnOrder = findViewById(R.id.itemProduct);
+        btnitemcart = findViewById(R.id.itemcart);
 
         rvOrders.setLayoutManager(new LinearLayoutManager(this));
 
@@ -58,8 +59,9 @@ public class Userpro extends AppCompatActivity {
         loadUserData();
 
         // الانتقال لصفحة المنتجات
-        btnOrder.setOnClickListener(v ->
-                startActivity(new Intent(Userpro.this, BrowseProducts.class))
+        btnOrder.setOnClickListener(v ->startActivity(new Intent(Userpro.this, BrowseProducts.class))
+        );
+        btnitemcart.setOnClickListener(v ->startActivity(new Intent(Userpro.this, Cart.class))
         );
 
         // تسجيل الخروج

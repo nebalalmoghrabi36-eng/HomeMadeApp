@@ -28,6 +28,7 @@
             android:gravity="right"/>
         <!--  اليسار: سلة + زر دخول  -->
         <TextView
+            android:id="@+id/btnCart"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="🛒"
@@ -57,6 +58,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
             <!--  HERO SECTION  -->
+            <!--  STATS  -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="260dp"
@@ -117,7 +119,7 @@
                         app:strokeWidth="2dp" />
                 </LinearLayout>
             </LinearLayout>
-            <!--  STATS  -->
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

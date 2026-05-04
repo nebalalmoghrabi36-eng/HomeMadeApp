@@ -206,16 +206,16 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- Terms -->
+
+
+                <!-- Button -->
                 <CheckBox
                     android:id="@+id/cbTerms"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="أوافق على الشروط والأحكام"
-                    android:layout_marginTop="10dp"
                     android:textColor="#178A63" />
 
-
-                <!-- Button -->
                 <Button
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
@@ -226,22 +226,16 @@
                     android:layout_marginTop="14dp"
                     android:backgroundTint="#2E7D32" />
 
-                <TextView
-                    android:id="@+id/tvLogout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:clickable="true"
-                    android:foreground="?attr/selectableItemBackground"
-                    android:text="خروج 🚪"
-                    android:textStyle="bold"
-                    android:textColor="#041805"
-                    android:textSize="14sp" />
+
+                <ImageView
+                    android:id="@+id/btnBackCart"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@android:drawable/ic_menu_revert" />
 
             </LinearLayout>
 
         </ScrollView>
 
     </com.google.android.material.card.MaterialCardView>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

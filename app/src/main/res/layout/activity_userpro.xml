@@ -228,6 +228,13 @@
                 android:backgroundTint="@color/green"
                 android:text="تسوق الان 🛒 "
                 android:textColor="#FFFFFF"/>
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/itemcart"
+                android:backgroundTint="@color/green"
+                android:text="سلة المشتريات 🛒 "
+                android:textColor="#FFFFFF"/>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

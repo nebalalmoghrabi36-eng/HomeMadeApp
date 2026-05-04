@@ -12,6 +12,24 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.HomeMade">
         <activity
+            android:name=".Payment"
+            android:exported="false" />
+        <activity
+            android:name=".Checkout"
+            android:exported="false" />
+        <activity
+            android:name=".Cart"
+            android:exported="false" />
+        <activity
+            android:name=".Cart"
+            android:exported="false" />
+        <activity
+            android:name=".ProductDetail"
+            android:exported="false" />
+        <activity
+            android:name=".SellerDashboard"
+            android:exported="false" />
+        <activity
             android:name=".Userpro"
             android:exported="false" />
         <activity

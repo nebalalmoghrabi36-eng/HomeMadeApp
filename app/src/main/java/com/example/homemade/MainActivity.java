@@ -2,7 +2,6 @@ package com.example.homemade;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -14,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.homemade.adapters.ProductAdapter;
 import com.example.homemade.models.Product;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -23,7 +23,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private Button btnLogin, btnBrowseProducts, btnJoinSeller;
-    private TextView tvSeeAll;
+    private TextView tvSeeAll, btnCart;
     private LinearLayout catFood, catAccessories, catHandcraft, catDecor, catKids, catGifts;
     private RecyclerView rvFeaturedProducts;
 
@@ -36,9 +36,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // تهيئة Firebase
+        // الرئيسية مفتوحة للكل بدون تحقق
         db = FirebaseFirestore.getInstance();
-
         initViews();
         setupRecyclerView();
         loadProductsFromFirebase();
@@ -46,21 +45,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        btnLogin = findViewById(R.id.btnLogin);
-        btnBrowseProducts = findViewById(R.id.btnBrowseProducts);
-        btnJoinSeller = findViewById(R.id.btnJoinSeller);
-        tvSeeAll = findViewById(R.id.tvSeeAll);
+        btnCart            = findViewById(R.id.btnCart);
+        btnLogin           = findViewById(R.id.btnLogin);
+        btnBrowseProducts  = findViewById(R.id.btnBrowseProducts);
+        btnJoinSeller      = findViewById(R.id.btnJoinSeller);
+        tvSeeAll           = findViewById(R.id.tvSeeAll);
         rvFeaturedProducts = findViewById(R.id.rvFeaturedProducts);
-        catFood = findViewById(R.id.catFood);
-        catAccessories = findViewById(R.id.catAccessories);
-        catHandcraft = findViewById(R.id.catHandcraft);
-        catDecor = findViewById(R.id.catDecor);
-        catKids = findViewById(R.id.catKids);
-        catGifts = findViewById(R.id.catGifts);
+        catFood            = findViewById(R.id.catFood);
+        catAccessories     = findViewById(R.id.catAccessories);
+        catHandcraft       = findViewById(R.id.catHandcraft);
+        catDecor           = findViewById(R.id.catDecor);
+        catKids            = findViewById(R.id.catKids);
+        catGifts           = findViewById(R.id.catGifts);
     }
 
     private void setupRecyclerView() {
-        productList = new ArrayList<>();
+        productList    = new ArrayList<>();
         productAdapter = new ProductAdapter(this, productList);
         rvFeaturedProducts.setLayoutManager(new LinearLayoutManager(this));
         rvFeaturedProducts.setAdapter(productAdapter);
@@ -97,22 +97,42 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        btnLogin.setOnClickListener(v ->
-                startActivity(new Intent(MainActivity.this, Login.class))
-        );
 
+        // زر دخول - ذكي: لو مسجل يروح للبروفايل، لو لأ يروح للـ Login
+        btnLogin.setOnClickListener(v -> {
+            if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+                startActivity(new Intent(MainActivity.this, Userpro.class));
+            } else {
+                startActivity(new Intent(MainActivity.this, Login.class));
+            }
+        });
+
+        // تصفح المنتجات - مفتوح للكل
         btnBrowseProducts.setOnClickListener(v ->
-                startActivity(new Intent(MainActivity.this,Login.class))
+                startActivity(new Intent(MainActivity.this, BrowseProducts.class))
         );
 
+        // انضم كبائع - يروح للتسجيل
         btnJoinSeller.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, rig.class))
         );
 
+        // عرض الكل - مفتوح للكل
         tvSeeAll.setOnClickListener(v ->
-                startActivity(new Intent(MainActivity.this, Login.class))
+                startActivity(new Intent(MainActivity.this, BrowseProducts.class))
         );
 
+        // السلة - يحتاج تسجيل دخول
+        btnCart.setOnClickListener(v -> {
+            if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+                startActivity(new Intent(MainActivity.this, Cart.class));
+            } else {
+                Toast.makeText(this, "يجب تسجيل الدخول لعرض السلة", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(MainActivity.this, Login.class));
+            }
+        });
+
+        // الفئات - مفتوحة للكل
         catFood.setOnClickListener(v -> openCategory("أكل وحلويات"));
         catAccessories.setOnClickListener(v -> openCategory("إكسسوارات"));
         catHandcraft.setOnClickListener(v -> openCategory("أشغال يدوية"));

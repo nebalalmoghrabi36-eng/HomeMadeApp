@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -28,7 +28,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@android:drawable/ic_menu_close_clear_cancel"
-            android:tint="#FFFFFF"/>
+            android:hint=" ابحث عن منتج....🔍"/>
     </LinearLayout>
     <!--  البحث  -->
     <LinearLayout
@@ -44,11 +44,7 @@
             android:hint="🔍 ابحث عن منتج..."
             android:background="@drawable/tab_rounded"
             android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:gravity="right"
-            android:textSize="14sp"
-            android:inputType="text"
-            android:imeOptions="actionSearch"/>
+            android:paddingEnd="12dp" android:gravity="right" android:textSize="14sp" android:inputType="text" android:imeOptions="actionSearch"/>
     </LinearLayout>
     <!--  فلتر الفئات  -->
     <HorizontalScrollView

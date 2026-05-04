@@ -1,25 +1,115 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:background="#FFFFFF" android:elevation="2dp" android:layout_marginBottom="12dp" android:layout_marginStart="8dp" android:layout_marginEnd="8dp" android:padding="12dp">
-    <!--  صورة المنتج  -->
-    <ImageView android:id="@+id/imgProduct" android:layout_width="90dp" android:layout_height="90dp" android:scaleType="centerCrop" android:background="@drawable/ic_image_placeholder" android:layout_marginStart="8dp"/>
-    <!--  معلومات المنتج  -->
-    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-        <!--  بادج مميز  -->
-        <TextView android:id="@+id/tvBadge" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="مميز" android:textColor="#FFFFFF" android:textSize="10sp" android:background="#FF7043" android:paddingStart="6dp" android:paddingEnd="6dp" android:paddingTop="2dp" android:paddingBottom="2dp" android:layout_gravity="end" android:layout_marginBottom="4dp"/>
-        <!--  اسم المنتج  -->
-        <TextView android:id="@+id/tvProductName" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="اسم المنتج" android:textColor="#1B1B1B" android:textSize="15sp" android:textStyle="bold" android:gravity="right"/>
-        <!--  وصف المنتج  -->
-        <TextView android:id="@+id/tvProductDesc" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="وصف المنتج" android:textColor="#757575" android:textSize="12sp" android:maxLines="2" android:ellipsize="end" android:gravity="right" android:layout_marginTop="2dp"/>
-        <!--  تقييم  -->
-        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_gravity="end" android:layout_marginTop="4dp">
-            <TextView android:id="@+id/tvRatingCount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="(0)" android:textColor="#AAAAAA" android:textSize="11sp" android:layout_marginEnd="4dp"/>
-            <RatingBar android:id="@+id/ratingBar" android:layout_width="wrap_content" android:layout_height="16dp" android:numStars="5" android:rating="0" android:stepSize="0.5" android:isIndicator="true" style="?android:attr/ratingBarStyleSmall"/>
-        </LinearLayout>
-        <!--  السعر وزر الإضافة  -->
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginTop="6dp">
-            <!--  السعر على اليمين  -->
-            <TextView android:id="@+id/tvPrice" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="0 ₪" android:textColor="#2E7D32" android:textSize="16sp" android:textStyle="bold" android:gravity="right"/>
-            <!--  زر أضف للسلة على اليسار  -->
-            <Button android:id="@+id/btnAddToCart" android:layout_width="wrap_content" android:layout_height="32dp" android:text="أضف للسلة" android:textColor="#FFFFFF" android:textSize="11sp" android:backgroundTint="#2E7D32" android:paddingStart="10dp" android:paddingEnd="10dp" style="@style/Widget.MaterialComponents.Button"/>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:layout_marginEnd="12dp" android:layout_marginBottom="12dp" app:cardCornerRadius="12dp" app:cardElevation="4dp" app:cardBackgroundColor="#FFFFFF">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp">
+        <!--  صورة المنتج  -->
+        <ImageView
+            android:id="@+id/imgProduct"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:scaleType="centerCrop"
+            android:background="@drawable/ic_image_placeholder"
+            android:layout_marginEnd="10dp"/>
+        <!--  معلومات المنتج  -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+            <!--  بادج مميز  -->
+            <TextView
+                android:id="@+id/tvBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⭐ مميز"
+                android:textColor="#FFFFFF"
+                android:textSize="10sp"
+                android:background="#FF7043"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
+                android:layout_gravity="end"
+                android:layout_marginBottom="4dp"
+                android:visibility="gone"/>
+            <!--  اسم المنتج  -->
+            <TextView
+                android:id="@+id/tvProductName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="اسم المنتج"
+                android:textColor="#1B1B1B"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:gravity="right"/>
+            <!--  وصف المنتج  -->
+            <TextView
+                android:id="@+id/tvProductDesc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="وصف المنتج"
+                android:textColor="#757575"
+                android:textSize="12sp"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:gravity="right"
+                android:layout_marginTop="3dp"/>
+            <!--  تقييم  -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_gravity="end"
+                android:layout_marginTop="4dp">
+                <TextView
+                    android:id="@+id/tvRatingCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="(0)"
+                    android:textColor="#AAAAAA"
+                    android:textSize="11sp"
+                    android:layout_marginEnd="4dp"/>
+                <RatingBar
+                    android:id="@+id/ratingBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="16dp"
+                    android:numStars="5"
+                    android:rating="0"
+                    android:stepSize="0.5"
+                    android:isIndicator="true"
+                    style="?android:attr/ratingBarStyleSmall"/>
+            </LinearLayout>
+            <!--  السعر وزر الإضافة  -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="6dp">
+                <TextView
+                    android:id="@+id/tvPrice"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="0 "
+                    android:textColor="#2E7D32"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:gravity="right"/>
+                <Button
+                    android:id="@+id/btnAddToCart"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:text="أضف للسلة"
+                    android:textColor="#FFFFFF"
+                    android:textSize="11sp"
+                    android:backgroundTint="#2E7D32"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    style="@style/Widget.MaterialComponents.Button"/>
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</androidx.cardview.widget.CardView>

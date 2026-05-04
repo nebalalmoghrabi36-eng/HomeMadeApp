@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,13 +24,14 @@ import java.util.Map;
 
 public class rig extends AppCompatActivity {
 
-    private TextView tvLogin, tvRegister,tvLogout;
+    private TextView tvLogin, tvRegister;
+    private ImageView tvLogout;
     private TextInputEditText etEmail, etPassword, etConfirmPassword, etName, etPhone;
     private Button btnLogin;
     private CheckBox cbRememberMe;
     private Spinner spinner;
-    private FirebaseAuth mAuth;
-    private FirebaseFirestore db;
+    private FirebaseAuth mAuth;// هاي فقك ل الايميل و الباسور
+    private FirebaseFirestore db;// هاي تخزين البيانات بجدول لل مستخدم مثل رقم الهاتف
     private SharedPreferences prefs;
 
     @Override
@@ -53,7 +55,7 @@ public class rig extends AppCompatActivity {
         etConfirmPassword = findViewById(R.id.confirmPassword);
         etName = findViewById(R.id.name);
         etPhone = findViewById(R.id.phone);
-        tvLogout = findViewById(R.id.tvLogout);
+        tvLogout = findViewById(R.id.btnBackCart);
 
 
         // إعداد Spinner

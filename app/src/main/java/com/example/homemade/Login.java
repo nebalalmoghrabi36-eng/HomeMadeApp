@@ -1,17 +1,19 @@
 package com.example.homemade;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Patterns;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class Login extends AppCompatActivity {
 
@@ -21,6 +23,7 @@ public class Login extends AppCompatActivity {
     private CheckBox cbRememberMe;
     private FirebaseAuth mAuth;
     private SharedPreferences prefs;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,15 +36,14 @@ public class Login extends AppCompatActivity {
         prefs = getSharedPreferences("HomemadePrefs", MODE_PRIVATE);
 
         // ربط العناصر
-        tvLogin = findViewById(R.id.tvGoToRegister);
-        tvRegister = findViewById(R.id.tvGoLogin);
+        tvLogin      = findViewById(R.id.tvGoToRegister);
+        tvRegister   = findViewById(R.id.tvGoLogin);
         cbRememberMe = findViewById(R.id.cbRemember);
-        etEmail = findViewById(R.id.etEmail);
-        etPassword = findViewById(R.id.etPassword);
-        btnLogin = findViewById(R.id.btnLogin);
+        etEmail      = findViewById(R.id.etEmail);
+        etPassword   = findViewById(R.id.etPassword);
+        btnLogin     = findViewById(R.id.btnLogin);
 
-
-        // لو في بيانات محفوظة من قبل احشيها تلقائياً
+        // لو في بيانات محفوظة من قبل يحطها تلقائياً
         if (prefs.getBoolean("rememberMe", false)) {
             etEmail.setText(prefs.getString("email", ""));
             etPassword.setText(prefs.getString("password", ""));
@@ -67,7 +69,7 @@ public class Login extends AppCompatActivity {
 
         // زر تسجيل الدخول
         btnLogin.setOnClickListener(v -> {
-            String email = etEmail.getText().toString().trim();
+            String email    = etEmail.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
 
             // التحقق من الإيميل
@@ -108,9 +110,26 @@ public class Login extends AppCompatActivity {
             // تسجيل الدخول عبر Firebase
             mAuth.signInWithEmailAndPassword(email, password)
                     .addOnSuccessListener(authResult -> {
-                        Intent intent = new Intent(Login.this, Userpro.class);
-                        Toast.makeText(this, "تم تسجيل الدخول بنجاح!", Toast.LENGTH_SHORT).show();
-                        startActivity(intent);
+                        String userId = authResult.getUser().getUid();
+
+                        // تحقق من نوع الحساب
+                        FirebaseFirestore.getInstance()
+                                .collection("users")
+                                .document(userId)
+                                .get()
+                                .addOnSuccessListener(doc -> {
+                                    String accountType = doc.getString("accountType");
+                                    Intent intent;
+
+                                    if ("بائع".equals(accountType)) {
+                                        intent = new Intent(Login.this, SellerDashboard.class);
+                                    } else {
+                                        intent = new Intent(Login.this, Userpro.class);
+                                    }
+
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                    startActivity(intent);
+                                });
                     })
                     .addOnFailureListener(e ->
                             Toast.makeText(this, "خطأ: البريد أو كلمة المرور غير صحيحة", Toast.LENGTH_SHORT).show()
