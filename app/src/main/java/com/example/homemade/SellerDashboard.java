@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -23,6 +24,7 @@ public class SellerDashboard extends AppCompatActivity {
 
     private RecyclerView rvSellerProducts;
     private TextView tvTotalProducts, tvTotalOrders, tvAvgRating, tvNoSellerProducts;
+    private TextView tvSellerName, tvLogout;
     private Button btnAddProduct;
 
     private FirebaseFirestore db;
@@ -36,7 +38,7 @@ public class SellerDashboard extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_seller_dashboard);
 
-        db = FirebaseFirestore.getInstance();
+        db    = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
         if (mAuth.getCurrentUser() != null) {
@@ -44,26 +46,38 @@ public class SellerDashboard extends AppCompatActivity {
         }
 
         // ربط العناصر
-        rvSellerProducts = findViewById(R.id.rvSellerProducts);
-        tvTotalProducts = findViewById(R.id.tvTotalProducts);
-        tvTotalOrders = findViewById(R.id.tvTotalOrders);
-        tvAvgRating = findViewById(R.id.tvAvgRating);
+        rvSellerProducts  = findViewById(R.id.rvSellerProducts);
+        tvTotalProducts   = findViewById(R.id.tvTotalProducts);
+        tvTotalOrders     = findViewById(R.id.tvTotalOrders);
+        tvAvgRating       = findViewById(R.id.tvAvgRating);
         tvNoSellerProducts = findViewById(R.id.tvNoSellerProducts);
-        btnAddProduct = findViewById(R.id.btnAddProduct);
+        btnAddProduct     = findViewById(R.id.btnAddProduct);
 
         // إعداد RecyclerView
-        productAdapter = new ProductAdapter(this, sellerProducts);
+        productAdapter = new ProductAdapter(this, sellerProducts, true);
         rvSellerProducts.setLayoutManager(new LinearLayoutManager(this));
         rvSellerProducts.setAdapter(productAdapter);
         rvSellerProducts.setNestedScrollingEnabled(false);
 
-        // تحميل البيانات
         loadSellerProducts();
 
         // زر إضافة منتج
         btnAddProduct.setOnClickListener(v ->
-                startActivity(new Intent(SellerDashboard.this, JoinSeller.class))
+                startActivity(new Intent(SellerDashboard.this, AddProduct.class))
         );
+
+        // زر تسجيل الخروج من الـ Toolbar
+        TextView tvLogout = findViewById(R.id.tvLogout);
+        if (tvLogout != null) {
+            tvLogout.setOnClickListener(v -> logout());
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // تحديث المنتجات لما يرجع من صفحة إضافة منتج
+        loadSellerProducts();
     }
 
     private void loadSellerProducts() {
@@ -85,6 +99,7 @@ public class SellerDashboard extends AppCompatActivity {
                         product.setRating(doc.getDouble("rating") != null ? doc.getDouble("rating").floatValue() : 0);
                         product.setReviewCount(doc.getLong("reviewCount") != null ? doc.getLong("reviewCount").intValue() : 0);
                         product.setImageUrl(doc.getString("imageUrl"));
+                        product.setCategory(doc.getString("category"));
                         product.setFeatured(Boolean.TRUE.equals(doc.getBoolean("isFeatured")));
                         sellerProducts.add(product);
                         totalRating += product.getRating();
@@ -92,7 +107,6 @@ public class SellerDashboard extends AppCompatActivity {
 
                     productAdapter.notifyDataSetChanged();
 
-                    // تحديث الإحصائيات
                     int count = sellerProducts.size();
                     tvTotalProducts.setText(String.valueOf(count));
                     tvAvgRating.setText(count > 0 ? String.format("%.1f", totalRating / count) : "0.0");
@@ -104,7 +118,10 @@ public class SellerDashboard extends AppCompatActivity {
                         tvNoSellerProducts.setVisibility(View.GONE);
                         rvSellerProducts.setVisibility(View.VISIBLE);
                     }
-                });
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "خطأ في تحميل المنتجات", Toast.LENGTH_SHORT).show()
+                );
 
         // جلب عدد الطلبات
         db.collection("orders")
@@ -113,5 +130,14 @@ public class SellerDashboard extends AppCompatActivity {
                 .addOnSuccessListener(queryDocumentSnapshots ->
                         tvTotalOrders.setText(String.valueOf(queryDocumentSnapshots.size()))
                 );
+    }
+
+    private void logout() {
+        mAuth.signOut();
+        Toast.makeText(this, "تم تسجيل الخروج", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(SellerDashboard.this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 }

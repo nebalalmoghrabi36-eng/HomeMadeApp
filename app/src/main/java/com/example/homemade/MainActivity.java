@@ -36,8 +36,21 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // الرئيسية مفتوحة للكل بدون تحقق
         db = FirebaseFirestore.getInstance();
+
+        // لو مسجل دخول تحقق من نوع الحساب
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            db.collection("users").document(uid).get()
+                    .addOnSuccessListener(doc -> {
+                        if (doc.exists() && "بائع".equals(doc.getString("accountType"))) {
+                            // بائع → روح لداشبورد البائع
+                            startActivity(new Intent(MainActivity.this, SellerDashboard.class));
+                            finish();
+                        }
+                    });
+        }
+
         initViews();
         setupRecyclerView();
         loadProductsFromFirebase();
@@ -86,7 +99,6 @@ public class MainActivity extends AppCompatActivity {
                         productList.add(product);
                     }
                     productAdapter.notifyDataSetChanged();
-
                     if (productList.isEmpty()) {
                         Toast.makeText(this, "لا توجد منتجات", Toast.LENGTH_SHORT).show();
                     }
@@ -97,8 +109,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-
-        // زر دخول - ذكي: لو مسجل يروح للبروفايل، لو لأ يروح للـ Login
         btnLogin.setOnClickListener(v -> {
             if (FirebaseAuth.getInstance().getCurrentUser() != null) {
                 startActivity(new Intent(MainActivity.this, Userpro.class));
@@ -107,22 +117,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // تصفح المنتجات - مفتوح للكل
         btnBrowseProducts.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, BrowseProducts.class))
         );
 
-        // انضم كبائع - يروح للتسجيل
         btnJoinSeller.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, rig.class))
         );
 
-        // عرض الكل - مفتوح للكل
         tvSeeAll.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, BrowseProducts.class))
         );
 
-        // السلة - يحتاج تسجيل دخول
         btnCart.setOnClickListener(v -> {
             if (FirebaseAuth.getInstance().getCurrentUser() != null) {
                 startActivity(new Intent(MainActivity.this, Cart.class));
@@ -132,7 +138,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // الفئات - مفتوحة للكل
         catFood.setOnClickListener(v -> openCategory("أكل وحلويات"));
         catAccessories.setOnClickListener(v -> openCategory("إكسسوارات"));
         catHandcraft.setOnClickListener(v -> openCategory("أشغال يدوية"));
