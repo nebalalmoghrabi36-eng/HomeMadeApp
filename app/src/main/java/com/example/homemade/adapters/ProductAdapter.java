@@ -2,10 +2,14 @@ package com.example.homemade.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -13,7 +17,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.homemade.Login;
 import com.example.homemade.ProductDetail;
 import com.example.homemade.R;
 import com.example.homemade.models.Product;
@@ -60,20 +63,21 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
 
         holder.tvProductName.setText(product.getName());
         holder.tvProductDesc.setText(product.getDescription());
-        holder.tvPrice.setText(product.getPrice() + " JOD");
+        holder.tvPrice.setText(product.getPrice() + " JD");
         holder.ratingBar.setRating(product.getRating());
         holder.tvRatingCount.setText("(" + product.getReviewCount() + ")");
         holder.tvBadge.setVisibility(product.isFeatured() ? View.VISIBLE : View.GONE);
 
+        // ✅ عرض الصورة من Base64
+        loadImage(product.getImageUrl(), holder.imgProduct);
+
         if (isSellerMode) {
-            // وضع البائع - زر الحذف
             holder.btnAddToCart.setText("🗑 حذف");
             holder.btnAddToCart.setBackgroundTintList(
                     android.content.res.ColorStateList.valueOf(0xFFE53935)
             );
             holder.btnAddToCart.setOnClickListener(v -> deleteProduct(product, position));
         } else {
-            // وضع الزبون - إضافة للسلة بـ Firestore
             holder.btnAddToCart.setText("أضف للسلة");
             holder.btnAddToCart.setBackgroundTintList(
                     android.content.res.ColorStateList.valueOf(0xFF2E7D32)
@@ -81,7 +85,6 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             holder.btnAddToCart.setOnClickListener(v -> addToCart(product));
         }
 
-        // عند الضغط على المنتج - فتح صفحة التفاصيل
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, ProductDetail.class);
             intent.putExtra("productId", product.getId());
@@ -91,33 +94,46 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             intent.putExtra("rating", product.getRating());
             intent.putExtra("reviewCount", product.getReviewCount());
             intent.putExtra("category", product.getCategory());
+            intent.putExtra("sellerId", product.getSellerId());
+            intent.putExtra("sellerName", product.getSellerName());
+            intent.putExtra("imageBase64", product.getImageUrl()); // ✅ تمرير الصورة
             context.startActivity(intent);
         });
     }
 
+    // ✅ تحويل Base64 لصورة وعرضها
+    private void loadImage(String base64, ImageView imageView) {
+        if (base64 != null && !base64.isEmpty()) {
+            try {
+                byte[] decodedBytes = Base64.decode(base64, Base64.DEFAULT);
+                Bitmap bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+                if (bitmap != null) {
+                    imageView.setImageBitmap(bitmap);
+                    return;
+                }
+            } catch (Exception ignored) {}
+        }
+        imageView.setImageResource(R.drawable.ic_image_placeholder);
+    }
+
     private void addToCart(Product product) {
+        String userId = FirebaseAuth.getInstance().getCurrentUser() != null
+                ? FirebaseAuth.getInstance().getCurrentUser().getUid()
+                : null;
 
-            String userId = FirebaseAuth.getInstance().getCurrentUser() != null
-                    ? FirebaseAuth.getInstance().getCurrentUser().getUid()
-                    : null;
+        if (userId == null) {
+            Toast.makeText(context, "يجب تسجيل الدخول أولاً", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-            if (userId == null) {
-                Toast.makeText(context, "يجب تسجيل الدخول أولاً للإضافة للسلة!", Toast.LENGTH_LONG).show();
-                // انتقل لصفحة Login
-                Intent intent = new Intent(context, Login.class);
-                context.startActivity(intent);
-                return;
-            }
-
-
-
-        // حفظ في Firestore
         Map<String, Object> cartItem = new HashMap<>();
         cartItem.put("productId", product.getId());
         cartItem.put("productName", product.getName());
         cartItem.put("price", product.getPrice());
         cartItem.put("userId", userId);
         cartItem.put("quantity", 1);
+        cartItem.put("sellerId", product.getSellerId() != null ? product.getSellerId() : "");
+        cartItem.put("sellerName", product.getSellerName() != null ? product.getSellerName() : "-");
 
         FirebaseFirestore.getInstance()
                 .collection("cart")
@@ -152,6 +168,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         TextView tvBadge, tvProductName, tvProductDesc, tvPrice, tvRatingCount;
         RatingBar ratingBar;
         Button btnAddToCart;
+        ImageView imgProduct; // ✅ مضاف
 
         public ProductViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -162,6 +179,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             tvRatingCount = itemView.findViewById(R.id.tvRatingCount);
             ratingBar     = itemView.findViewById(R.id.ratingBar);
             btnAddToCart  = itemView.findViewById(R.id.btnAddToCart);
+            imgProduct    = itemView.findViewById(R.id.imgProduct); // ✅ مضاف
         }
     }
 }

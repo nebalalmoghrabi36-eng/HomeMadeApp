@@ -11,6 +11,7 @@ public class Product {
     private boolean isFeatured;
     private String category;
     private String sellerId;
+    private String sellerName;
 
     public Product() {}
 
@@ -25,6 +26,8 @@ public class Product {
     public boolean isFeatured() { return isFeatured; }
     public String getCategory() { return category; }
     public String getSellerId() { return sellerId; }
+    public String getSellerName() { return sellerName; }
+
 
     // Setters
     public void setId(String id) { this.id = id; }
@@ -33,8 +36,9 @@ public class Product {
     public void setPrice(double price) { this.price = price; }
     public void setRating(float rating) { this.rating = rating; }
     public void setReviewCount(int reviewCount) { this.reviewCount = reviewCount; }
-    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public void setImageBase64(String imageUrl) { this.imageUrl = imageUrl; }
     public void setFeatured(boolean featured) { isFeatured = featured; }
     public void setCategory(String category) { this.category = category; }
     public void setSellerId(String sellerId) { this.sellerId = sellerId; }
+    public void setSellerName(String sellerName) { this.sellerName = sellerName; }
 }

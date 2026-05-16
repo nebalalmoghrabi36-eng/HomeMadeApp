@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -48,26 +49,25 @@ public class BrowseProducts extends AppCompatActivity {
 
         btnBack.setOnClickListener(v -> finish());
 
-        // لو جاي من فئة معينة
         String category = getIntent().getStringExtra("category");
         if (category != null) {
-            filterByCategory(category);
+            selectCategoryByName(category);
         }
     }
 
     private void initViews() {
-        rvProducts = findViewById(R.id.rvProducts);
-        etSearch = findViewById(R.id.etSearch);
+        rvProducts    = findViewById(R.id.rvProducts);
+        etSearch      = findViewById(R.id.etSearch);
         tvResultCount = findViewById(R.id.tvResultCount);
-        tvNoProducts = findViewById(R.id.tvNoProducts);
-        btnBack = findViewById(R.id.btnBack);
-        catAll = findViewById(R.id.catAll);
-        catFood2 = findViewById(R.id.catFood2);
-        catAcc2 = findViewById(R.id.catAcc2);
-        catHand2 = findViewById(R.id.catHand2);
-        catKids2 = findViewById(R.id.catKids2);
-        catGifts2 = findViewById(R.id.catGifts2);
-        catDecor2 = findViewById(R.id.catDecor2);
+        tvNoProducts  = findViewById(R.id.tvNoProducts);
+        btnBack       = findViewById(R.id.btnBack);
+        catAll        = findViewById(R.id.catAll);
+        catFood2      = findViewById(R.id.catFood2);
+        catAcc2       = findViewById(R.id.catAcc2);
+        catHand2      = findViewById(R.id.catHand2);
+        catKids2      = findViewById(R.id.catKids2);
+        catGifts2     = findViewById(R.id.catGifts2);
+        catDecor2     = findViewById(R.id.catDecor2);
     }
 
     private void setupRecyclerView() {
@@ -88,8 +88,16 @@ public class BrowseProducts extends AppCompatActivity {
                         product.setPrice(doc.getDouble("price") != null ? doc.getDouble("price") : 0);
                         product.setRating(doc.getDouble("rating") != null ? doc.getDouble("rating").floatValue() : 0);
                         product.setReviewCount(doc.getLong("reviewCount") != null ? doc.getLong("reviewCount").intValue() : 0);
-                        product.setImageUrl(doc.getString("imageUrl"));
+                        product.setCategory(doc.getString("category"));
+                        product.setSellerId(doc.getString("sellerId"));
+                        product.setSellerName(doc.getString("sellerName"));
                         product.setFeatured(Boolean.TRUE.equals(doc.getBoolean("isFeatured")));
+
+                        // ✅ اقرأ الصورة من imageBase64 أو imageUrl (للمنتجات القديمة)
+                        String img = doc.getString("imageBase64");
+                        if (img == null || img.isEmpty()) img = doc.getString("imageUrl");
+                        product.setImageBase64(img);
+
                         allProducts.add(product);
                     }
                     filterByCategory("الكل");
@@ -107,26 +115,35 @@ public class BrowseProducts extends AppCompatActivity {
     }
 
     private void selectCategory(TextView selected) {
-        // إعادة تعيين كل الأزرار
         for (TextView cat : new TextView[]{catAll, catFood2, catAcc2, catHand2, catKids2, catGifts2, catDecor2}) {
             cat.setBackgroundResource(R.drawable.tab_rounded);
             cat.setTextColor(getColor(android.R.color.black));
         }
-        // تفعيل المختار
         selected.setBackgroundResource(R.drawable.tab_active);
         selected.setTextColor(getColor(android.R.color.white));
+    }
+
+    private void selectCategoryByName(String category) {
+        switch (category) {
+            case "أكل وحلويات": selectCategory(catFood2); break;
+            case "إكسسوارات":   selectCategory(catAcc2);  break;
+            case "أشغال يدوية": selectCategory(catHand2); break;
+            case "أطفال":       selectCategory(catKids2); break;
+            case "هدايا":       selectCategory(catGifts2); break;
+            case "ديكور":       selectCategory(catDecor2); break;
+            default:            selectCategory(catAll);   break;
+        }
+        filterByCategory(category);
     }
 
     private void filterByCategory(String category) {
         selectedCategory = category;
         filteredProducts.clear();
-
         for (Product p : allProducts) {
             if (category.equals("الكل") || category.equals(p.getCategory())) {
                 filteredProducts.add(p);
             }
         }
-
         productAdapter.notifyDataSetChanged();
         updateResultCount();
     }
@@ -145,7 +162,8 @@ public class BrowseProducts extends AppCompatActivity {
         filteredProducts.clear();
         for (Product p : allProducts) {
             boolean matchesCategory = selectedCategory.equals("الكل") || selectedCategory.equals(p.getCategory());
-            boolean matchesSearch = query.isEmpty() || p.getName().contains(query) || p.getDescription().contains(query);
+            boolean matchesSearch   = query.isEmpty() || p.getName().contains(query) ||
+                    (p.getDescription() != null && p.getDescription().contains(query));
             if (matchesCategory && matchesSearch) {
                 filteredProducts.add(p);
             }

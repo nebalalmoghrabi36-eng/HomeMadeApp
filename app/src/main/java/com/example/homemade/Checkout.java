@@ -72,7 +72,7 @@ public class Checkout extends AppCompatActivity {
         btnBackCheckout     = findViewById(R.id.btnBackCheckout);
 
         totalPrice = getIntent().getDoubleExtra("totalPrice", 0);
-        tvCheckoutTotal.setText(String.format("%.2f ₪", totalPrice));
+        tvCheckoutTotal.setText(String.format("%.2f JD", totalPrice));
 
         orderAdapter = new OrderItemAdapter();
         rvOrderItems.setLayoutManager(new LinearLayoutManager(this));
@@ -161,37 +161,69 @@ public class Checkout extends AppCompatActivity {
             startActivity(intent);
 
         } else {
-            // دفع نقداً - حفظ مباشرة في Firestore
+            // ✅ دفع نقداً — طلب منفصل لكل بائع
+            saveOrdersGroupedBySeller(name, phone, address, "نقداً");
+        }
+    }
+
+    // ✅ دالة جديدة: تجمّع المنتجات حسب البائع وتحفظ طلب لكل بائع
+    private void saveOrdersGroupedBySeller(String name, String phone, String address, String paymentMethod) {
+
+        // 1. جمّع المنتجات حسب sellerId
+        Map<String, List<Map<String, Object>>> ordersBySeller = new HashMap<>();
+        for (Map<String, Object> item : orderItems) {
+            String sid = item.get("sellerId") != null ? item.get("sellerId").toString() : "unknown";
+            if (!ordersBySeller.containsKey(sid)) {
+                ordersBySeller.put(sid, new ArrayList<>());
+            }
+            ordersBySeller.get(sid).add(item);
+        }
+
+        // 2. احفظ طلب منفصل لكل بائع
+        for (Map.Entry<String, List<Map<String, Object>>> entry : ordersBySeller.entrySet()) {
+            String sellerId = entry.getKey();
+            List<Map<String, Object>> items = entry.getValue();
+
+            // احسب المجموع لهذا البائع
+            double sellerTotal = 0;
+            for (Map<String, Object> item : items) {
+                if (item.get("price") instanceof Number) {
+                    sellerTotal += ((Number) item.get("price")).doubleValue();
+                }
+            }
+
+            // اسم البائع من أول منتج
+            String sellerName = items.get(0).get("sellerName") != null
+                    ? items.get(0).get("sellerName").toString() : "-";
+
             Map<String, Object> order = new HashMap<>();
             order.put("userId", userId);
+            order.put("sellerId", sellerId);           // ✅ مهم
+            order.put("sellerName", sellerName);
             order.put("customerName", name);
             order.put("customerPhone", phone);
             order.put("customerAddress", address);
-            order.put("paymentMethod", "نقداً");
-            order.put("totalAmount", totalPrice);
-            order.put("itemCount", orderItems.size());
-            order.put("status", "pending");
+            order.put("paymentMethod", paymentMethod);
+            order.put("totalAmount", sellerTotal);
+            order.put("itemCount", items.size());
+            order.put("status", "paid");
 
-            db.collection("orders").add(order)
-                    .addOnSuccessListener(ref -> {
-                        // حذف السلة
-                        for (String docId : cartDocIds) {
-                            db.collection("cart").document(docId).delete();
-                        }
-                        Toast.makeText(this,
-                                "✅ تم تأكيد طلبك!\nسيتم التواصل معك على " + phone,
-                                Toast.LENGTH_LONG).show();
-
-                        // رجوع للرئيسية
-                        Intent intent = new Intent(Checkout.this, MainActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(intent);
-                        finish();
-                    })
-                    .addOnFailureListener(e ->
-                            Toast.makeText(this, "خطأ في تأكيد الطلب", Toast.LENGTH_SHORT).show()
-                    );
+            db.collection("orders").add(order);
         }
+
+        // 3. احذف السلة
+        for (String docId : cartDocIds) {
+            db.collection("cart").document(docId).delete();
+        }
+
+        Toast.makeText(this,
+                "✅ تم تأكيد طلبك!\nسيتم التواصل معك على " + phone,
+                Toast.LENGTH_LONG).show();
+
+        Intent intent = new Intent(Checkout.this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+        finish();
     }
 
     // ── Order Items Adapter ───────────────────────────────────────────────────
@@ -208,11 +240,11 @@ public class Checkout extends AppCompatActivity {
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             Map<String, Object> item = orderItems.get(position);
-            Object name  = item.get("productName");
-            Object price = item.get("price");
-            holder.text1.setText(name != null ? name.toString() : "منتج");
+            Object itemName  = item.get("productName");
+            Object price     = item.get("price");
+            holder.text1.setText(itemName != null ? itemName.toString() : "منتج");
             holder.text2.setText(price != null ?
-                    String.format("%.2f JOD", ((Number) price).doubleValue()) : " JOD 0 ");
+                    String.format("%.2f JD", ((Number) price).doubleValue()) : "0 JD");
             holder.text1.setTextDirection(View.TEXT_DIRECTION_RTL);
             holder.text2.setTextDirection(View.TEXT_DIRECTION_RTL);
         }

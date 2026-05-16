@@ -107,7 +107,7 @@ public class Cart extends AppCompatActivity {
                     }
 
                     cartAdapter.notifyDataSetChanged();
-                    tvTotal.setText(String.format("%.2f JOD", totalPrice));
+                    tvTotal.setText(String.format("%.2f JD", totalPrice));
 
                     if (cartItems.isEmpty()) {
                         layoutEmptyCart.setVisibility(View.VISIBLE);
@@ -135,7 +135,7 @@ public class Cart extends AppCompatActivity {
                     cartItems.remove(position);
                     cartDocIds.remove(position);
                     cartAdapter.notifyItemRemoved(position);
-                    tvTotal.setText(String.format("%.2f JOD", totalPrice));
+                    tvTotal.setText(String.format("%.2f JD", totalPrice));
 
                     if (cartItems.isEmpty()) {
                         layoutEmptyCart.setVisibility(View.VISIBLE);
@@ -166,7 +166,7 @@ public class Cart extends AppCompatActivity {
             Object seller = item.get("sellerName");
 
             holder.tvCartProductName.setText(name != null ? name.toString() : "منتج");
-            holder.tvCartPrice.setText(price != null ? String.format("%.2f JOD", ((Number) price).doubleValue()) : "0 JOD");
+            holder.tvCartPrice.setText(price != null ? String.format("%.2f JD", ((Number) price).doubleValue()) : "0 JD");
             holder.tvCartSellerName.setText("البائع: " + (seller != null ? seller.toString() : "-"));
 
             holder.btnRemoveItem.setOnClickListener(v -> removeItem(holder.getAdapterPosition()));

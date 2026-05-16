@@ -60,7 +60,7 @@ public class Payment extends AppCompatActivity {
         progressPayment  = findViewById(R.id.progressPayment);
         tvPaymentAmount  = findViewById(R.id.tvPaymentAmount);
 
-        tvPaymentAmount.setText(String.format("%.2f ₪", totalPrice));
+        tvPaymentAmount.setText(String.format("%.2f JD", totalPrice));
 
         btnBackPayment.setOnClickListener(v -> finish());
 
@@ -84,8 +84,8 @@ public class Payment extends AppCompatActivity {
             etCardNumber.requestFocus();
             return;
         }
-        if (expiry.isEmpty() || !expiry.contains("/")) {
-            etExpiry.setError("الرجاء إدخال تاريخ الانتهاء (MM/YY)");
+        if (expiry.isEmpty() || expiry.length()!=4) {
+            etExpiry.setError("الرجاء إدخال تاريخ الانتهاء (MMYY)");
             etExpiry.requestFocus();
             return;
         }
@@ -138,7 +138,7 @@ public class Payment extends AppCompatActivity {
                 })
                 .addOnFailureListener(e -> {
                     btnPay.setEnabled(true);
-                    btnPay.setText("🔒 ادفع الآن");
+                    btnPay.setText("ادفع الآن 🔒 ");
                     Toast.makeText(this, "خطأ في معالجة الدفع", Toast.LENGTH_SHORT).show();
                 });
     }
@@ -147,7 +147,7 @@ public class Payment extends AppCompatActivity {
         new AlertDialog.Builder(this)
                 .setTitle("تم الدفع بنجاح! \"✅ " )
                 .setMessage("شكراً " + customerName + "!\n\nتم تأكيد طلبك بمبلغ " +
-                        String.format("JOD %.2f ", totalPrice) + "\n\nسيتم التواصل معك على " + customerPhone)
+                        String.format("JOD %.2f JD ", totalPrice) + "\n\nسيتم التواصل معك على " + customerPhone)
                 .setCancelable(false)
                 .setPositiveButton("العودة للرئيسية", (dialog, which) -> {
                     // رجوع للصفحة الرئيسية

@@ -25,41 +25,46 @@ public class ProductDetail extends AppCompatActivity {
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
     private String productId;
+    private String sellerId;    // ✅ مضاف
+    private String sellerName;  // ✅ مضاف
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product_detail);
 
-        db = FirebaseFirestore.getInstance();
+        db    = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
         // ربط العناصر
-        imgProductDetail = findViewById(R.id.imgProductDetail);
-        tvDetailName = findViewById(R.id.tvDetailName);
-        tvDetailPrice = findViewById(R.id.tvDetailPrice);
-        tvDetailDesc = findViewById(R.id.tvDetailDesc);
-        tvDetailCategory = findViewById(R.id.tvDetailCategory);
+        imgProductDetail    = findViewById(R.id.imgProductDetail);
+        tvDetailName        = findViewById(R.id.tvDetailName);
+        tvDetailPrice       = findViewById(R.id.tvDetailPrice);
+        tvDetailDesc        = findViewById(R.id.tvDetailDesc);
+        tvDetailCategory    = findViewById(R.id.tvDetailCategory);
         tvDetailRatingCount = findViewById(R.id.tvDetailRatingCount);
-        ratingBarDetail = findViewById(R.id.ratingBarDetail);
-        btnAddToCartDetail = findViewById(R.id.btnAddToCartDetail);
-        btnBack = findViewById(R.id.btnBack);
+        ratingBarDetail     = findViewById(R.id.ratingBarDetail);
+        btnAddToCartDetail  = findViewById(R.id.btnAddToCartDetail);
+        btnBack             = findViewById(R.id.btnBack);
 
         btnBack.setOnClickListener(v -> finish());
 
-        // استقبال بيانات المنتج من الصفحة السابقة
-        productId = getIntent().getStringExtra("productId");
-        String name = getIntent().getStringExtra("name");
-        String desc = getIntent().getStringExtra("description");
-        double price = getIntent().getDoubleExtra("price", 0);
-        float rating = getIntent().getFloatExtra("rating", 0);
+        // استقبال بيانات المنتج
+        productId  = getIntent().getStringExtra("productId");
+        sellerId   = getIntent().getStringExtra("sellerId");    // ✅ مضاف
+        sellerName = getIntent().getStringExtra("sellerName");  // ✅ مضاف
+
+        String name     = getIntent().getStringExtra("name");
+        String desc     = getIntent().getStringExtra("description");
+        double price    = getIntent().getDoubleExtra("price", 0);
+        float  rating   = getIntent().getFloatExtra("rating", 0);
         int reviewCount = getIntent().getIntExtra("reviewCount", 0);
         String category = getIntent().getStringExtra("category");
 
         // عرض البيانات
         tvDetailName.setText(name);
         tvDetailDesc.setText(desc);
-        tvDetailPrice.setText(price + " ₪");
+        tvDetailPrice.setText(price + " JD");
         tvDetailCategory.setText(category != null ? category : "");
         ratingBarDetail.setRating(rating);
         tvDetailRatingCount.setText("(" + reviewCount + " تقييم)");
@@ -82,11 +87,13 @@ public class ProductDetail extends AppCompatActivity {
         cartItem.put("price", price);
         cartItem.put("userId", userId);
         cartItem.put("quantity", 1);
+        cartItem.put("sellerId", sellerId != null ? sellerId : "");         // ✅ مضاف
+        cartItem.put("sellerName", sellerName != null ? sellerName : "-");  // ✅ مضاف
 
         db.collection("cart")
                 .add(cartItem)
                 .addOnSuccessListener(ref ->
-                        Toast.makeText(this, "✅ تمت الإضافة للسلة!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "تمت الإضافة للسلة! ✅", Toast.LENGTH_SHORT).show()
                 )
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "خطأ في الإضافة", Toast.LENGTH_SHORT).show()

@@ -42,14 +42,17 @@ public class DataSeeder {
         product.put("category", category);
         product.put("imageUrl", "");
         product.put("isFeatured", isFeatured);
+        product.put("sellerId", "");
+        product.put("sellerName", "");
+
 
         db.collection("products")
                 .add(product)
                 .addOnSuccessListener(ref ->
-                        System.out.println("✅ تم رفع المنتج: " + name)
+                        System.out.println(" تم رفع المنتج: ✅ " + name)
                 )
                 .addOnFailureListener(e ->
-                        System.out.println("❌ فشل رفع المنتج: " + name + " - " + e.getMessage())
+                        System.out.println(" فشل رفع المنتج: ❌ " + name + " - " + e.getMessage())
                 );
     }
 }

@@ -38,13 +38,11 @@ public class MainActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
 
-        // لو مسجل دخول تحقق من نوع الحساب
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
             String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
             db.collection("users").document(uid).get()
                     .addOnSuccessListener(doc -> {
                         if (doc.exists() && "بائع".equals(doc.getString("accountType"))) {
-                            // بائع → روح لداشبورد البائع
                             startActivity(new Intent(MainActivity.this, SellerDashboard.class));
                             finish();
                         }
@@ -94,13 +92,18 @@ public class MainActivity extends AppCompatActivity {
                         product.setPrice(doc.getDouble("price") != null ? doc.getDouble("price") : 0);
                         product.setRating(doc.getDouble("rating") != null ? doc.getDouble("rating").floatValue() : 0);
                         product.setReviewCount(doc.getLong("reviewCount") != null ? doc.getLong("reviewCount").intValue() : 0);
-                        product.setImageUrl(doc.getString("imageUrl"));
+                        // ✅ اقرأ الصورة من imageBase64 أو imageUrl
+                        String img = doc.getString("imageBase64");
+                        if (img == null || img.isEmpty()) img = doc.getString("imageUrl");
+                        product.setImageBase64(img);
+                        product.setSellerId(doc.getString("sellerId"));
+                        product.setSellerName(doc.getString("sellerName"));
                         product.setFeatured(true);
                         productList.add(product);
                     }
                     productAdapter.notifyDataSetChanged();
                     if (productList.isEmpty()) {
-                        Toast.makeText(this, "لا توجد منتجات", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "لا توجد منتجات مميزة", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(e ->

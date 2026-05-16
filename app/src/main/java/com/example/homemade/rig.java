@@ -169,7 +169,7 @@ public class rig extends AppCompatActivity {
                                     // الانتقال حسب نوع الحساب
                                     Intent intent;
                                     if (accountType.equals("بائع")) {
-                                        intent = new Intent(rig.this, JoinSeller.class);
+                                        intent = new Intent(rig.this,SellerDashboard.class);
                                     } else {
                                         intent = new Intent(rig.this,Userpro.class);
                                     }

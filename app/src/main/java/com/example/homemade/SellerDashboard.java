@@ -24,7 +24,6 @@ public class SellerDashboard extends AppCompatActivity {
 
     private RecyclerView rvSellerProducts;
     private TextView tvTotalProducts, tvTotalOrders, tvAvgRating, tvNoSellerProducts;
-    private TextView tvSellerName, tvLogout;
     private Button btnAddProduct;
 
     private FirebaseFirestore db;
@@ -46,12 +45,17 @@ public class SellerDashboard extends AppCompatActivity {
         }
 
         // ربط العناصر
-        rvSellerProducts  = findViewById(R.id.rvSellerProducts);
-        tvTotalProducts   = findViewById(R.id.tvTotalProducts);
-        tvTotalOrders     = findViewById(R.id.tvTotalOrders);
-        tvAvgRating       = findViewById(R.id.tvAvgRating);
+        rvSellerProducts   = findViewById(R.id.rvSellerProducts);
+        tvTotalProducts    = findViewById(R.id.tvTotalProducts);
+        tvTotalOrders      = findViewById(R.id.tvTotalOrders);
+        tvAvgRating        = findViewById(R.id.tvAvgRating);
         tvNoSellerProducts = findViewById(R.id.tvNoSellerProducts);
-        btnAddProduct     = findViewById(R.id.btnAddProduct);
+        btnAddProduct      = findViewById(R.id.btnAddProduct);
+
+        // ✅ الانتقال لصفحة الطلبات عند الضغط على عدد الطلبات
+        tvTotalOrders.setOnClickListener(v ->
+                startActivity(new Intent(SellerDashboard.this, SellerOrders.class))
+        );
 
         // إعداد RecyclerView
         productAdapter = new ProductAdapter(this, sellerProducts, true);
@@ -76,7 +80,6 @@ public class SellerDashboard extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // تحديث المنتجات لما يرجع من صفحة إضافة منتج
         loadSellerProducts();
     }
 
@@ -98,9 +101,11 @@ public class SellerDashboard extends AppCompatActivity {
                         product.setPrice(doc.getDouble("price") != null ? doc.getDouble("price") : 0);
                         product.setRating(doc.getDouble("rating") != null ? doc.getDouble("rating").floatValue() : 0);
                         product.setReviewCount(doc.getLong("reviewCount") != null ? doc.getLong("reviewCount").intValue() : 0);
-                        product.setImageUrl(doc.getString("imageUrl"));
+                        product.setImageBase64(doc.getString("imageUrl"));
                         product.setCategory(doc.getString("category"));
                         product.setFeatured(Boolean.TRUE.equals(doc.getBoolean("isFeatured")));
+                        product.setSellerId(doc.getString("sellerId"));
+                        product.setSellerName(doc.getString("sellerName"));
                         sellerProducts.add(product);
                         totalRating += product.getRating();
                     }
