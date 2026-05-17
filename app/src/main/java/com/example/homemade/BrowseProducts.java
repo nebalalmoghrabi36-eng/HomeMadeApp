@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.homemade.adapters.ProductAdapter;
 import com.example.homemade.models.Product;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
@@ -34,6 +35,9 @@ public class BrowseProducts extends AppCompatActivity {
     private List<Product> filteredProducts = new ArrayList<>();
     private String selectedCategory = "الكل";
 
+    // ✅ لإيقاف الـ listener لما نخرج من الصفحة
+    private ListenerRegistration productsListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,7 +47,7 @@ public class BrowseProducts extends AppCompatActivity {
 
         initViews();
         setupRecyclerView();
-        loadAllProducts();
+        loadAllProductsRealTime(); // ✅ بدّلنا هنا
         setupCategoryFilter();
         setupSearch();
 
@@ -76,9 +80,12 @@ public class BrowseProducts extends AppCompatActivity {
         rvProducts.setAdapter(productAdapter);
     }
 
-    private void loadAllProducts() {
-        db.collection("products").get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
+    // ✅ Real-time listener — يتحدث تلقائياً لما يتغير أي تقييم
+    private void loadAllProductsRealTime() {
+        productsListener = db.collection("products")
+                .addSnapshotListener((queryDocumentSnapshots, error) -> {
+                    if (error != null || queryDocumentSnapshots == null) return;
+
                     allProducts.clear();
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         Product product = new Product();
@@ -93,15 +100,30 @@ public class BrowseProducts extends AppCompatActivity {
                         product.setSellerName(doc.getString("sellerName"));
                         product.setFeatured(Boolean.TRUE.equals(doc.getBoolean("isFeatured")));
 
-                        // ✅ اقرأ الصورة من imageBase64 أو imageUrl (للمنتجات القديمة)
                         String img = doc.getString("imageBase64");
                         if (img == null || img.isEmpty()) img = doc.getString("imageUrl");
                         product.setImageBase64(img);
 
                         allProducts.add(product);
                     }
-                    filterByCategory("الكل");
+
+                    // ✅ أعد تطبيق الفلتر الحالي بعد كل تحديث
+                    String currentSearch = etSearch.getText().toString();
+                    if (!currentSearch.isEmpty()) {
+                        searchProducts(currentSearch);
+                    } else {
+                        filterByCategory(selectedCategory);
+                    }
                 });
+    }
+
+    // ✅ أوقف الـ listener لما يخرج المستخدم — ضروري لتوفير الموارد
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (productsListener != null) {
+            productsListener.remove();
+        }
     }
 
     private void setupCategoryFilter() {

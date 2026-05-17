@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.HomeMade">
         <activity
+            android:name=".AllOrders"
+            android:exported="false" />
+        <activity
             android:name=".SellerOrders"
             android:exported="false" />
         <activity

@@ -2,7 +2,6 @@ package com.example.homemade;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -64,7 +63,14 @@ public class Userpro extends AppCompatActivity {
         btnOrder      = findViewById(R.id.itemProduct);
         btnitemcart   = findViewById(R.id.itemcart);
 
-        // إعداد RecyclerView للطلبات
+        // ✅ زر "عرض الكل" → يروح لصفحة كل الطلبات
+        TextView tvSeeAllOrders = findViewById(R.id.tvSeeAllOrders);
+        if (tvSeeAllOrders != null) {
+            tvSeeAllOrders.setOnClickListener(v ->
+                    startActivity(new Intent(Userpro.this, AllOrders.class))
+            );
+        }
+
         ordersAdapter = new OrdersAdapter();
         rvOrders.setLayoutManager(new LinearLayoutManager(this));
         rvOrders.setAdapter(ordersAdapter);
@@ -133,48 +139,45 @@ public class Userpro extends AppCompatActivity {
                 .addOnFailureListener(e -> tvNoOrders.setVisibility(View.VISIBLE));
     }
 
-    // ✅ دالة التقييم — تفتح dialog للزبون يقيم المنتجات
+    // ✅ تحديث isRated في القائمة المحلية فوراً
+    private void markOrderAsRated(String orderId) {
+        int index = ordersDocIds.indexOf(orderId);
+        if (index != -1) {
+            ordersList.get(index).put("isRated", true);
+            ordersAdapter.notifyItemChanged(index);
+        }
+    }
+
     private void showRatingDialog(Map<String, Object> order, int position) {
         String orderId  = ordersDocIds.get(position);
         String sellerId = order.get("sellerId") != null ? order.get("sellerId").toString() : null;
 
-        // جلب منتجات هذا الطلب من Firestore
         db.collection("orders").document(orderId)
                 .collection("items")
                 .get()
                 .addOnSuccessListener(itemsSnapshot -> {
-                    if (itemsSnapshot.isEmpty()) {
-                        // لو ما في sub-collection، قيّم البائع مباشرة
-                        showSellerRatingDialog(sellerId, orderId, order);
+                    if (!itemsSnapshot.isEmpty()) {
+                        rateNextProduct(itemsSnapshot.getDocuments(), 0, sellerId, orderId);
                     } else {
-                        // قيّم كل منتج لحاله
-                        showProductsRatingDialog(itemsSnapshot.getDocuments(), sellerId, orderId);
+                        showSellerRatingDialog(sellerId, orderId, order);
                     }
                 })
-                .addOnFailureListener(e -> {
-                    // fallback: قيّم البائع مباشرة
-                    showSellerRatingDialog(sellerId, orderId, order);
-                });
+                .addOnFailureListener(e ->
+                        showSellerRatingDialog(sellerId, orderId, order)
+                );
     }
 
-    // ✅ تقييم البائع مباشرة (لما ما في items sub-collection)
     private void showSellerRatingDialog(String sellerId, String orderId, Map<String, Object> order) {
-        View dialogView = LayoutInflater.from(this).inflate(android.R.layout.simple_list_item_1, null);
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("⭐ قيّم طلبك");
-
-        // بناء الـ dialog يدوياً
         android.widget.LinearLayout layout = new android.widget.LinearLayout(this);
         layout.setOrientation(android.widget.LinearLayout.VERTICAL);
         layout.setPadding(40, 20, 40, 20);
 
-        TextView tvProductName = new TextView(this);
+        TextView tvName = new TextView(this);
         String sellerName = order.get("sellerName") != null ? order.get("sellerName").toString() : "البائع";
-        tvProductName.setText("تقييم الطلب من: " + sellerName);
-        tvProductName.setTextSize(16);
-        tvProductName.setGravity(android.view.Gravity.CENTER);
-        tvProductName.setPadding(0, 0, 0, 20);
+        tvName.setText("تقييم الطلب من: " + sellerName);
+        tvName.setTextSize(16);
+        tvName.setGravity(android.view.Gravity.CENTER);
+        tvName.setPadding(0, 0, 0, 20);
 
         RatingBar ratingBar = new RatingBar(this);
         ratingBar.setNumStars(5);
@@ -187,35 +190,35 @@ public class Userpro extends AppCompatActivity {
         params.gravity = android.view.Gravity.CENTER;
         ratingBar.setLayoutParams(params);
 
-        layout.addView(tvProductName);
+        layout.addView(tvName);
         layout.addView(ratingBar);
-        builder.setView(layout);
 
-        builder.setPositiveButton("إرسال التقييم", (dialog, which) -> {
-            float rating = ratingBar.getRating();
-            submitRatingToSeller(sellerId, rating, orderId);
-        });
-        builder.setNegativeButton("إلغاء", null);
-        builder.show();
+        new AlertDialog.Builder(this)
+                .setTitle("⭐ قيّم طلبك")
+                .setView(layout)
+                .setPositiveButton("إرسال التقييم", (dialog, which) ->
+                        submitRating(sellerId, ratingBar.getRating(), orderId)
+                )
+                .setNegativeButton("إلغاء", null)
+                .show();
     }
 
-    // ✅ تقييم كل منتج لحاله
-    private void showProductsRatingDialog(List<DocumentSnapshot> items, String sellerId, String orderId) {
-        // نقيّم منتج منتج
-        rateNextProduct(items, 0, sellerId, orderId);
-    }
-
-    private void rateNextProduct(List<DocumentSnapshot> items, int index, String sellerId, String orderId) {
+    // ✅ استبدل rateNextProduct بهذا الكود كاملاً في Userpro.java
+    private void rateNextProduct(List<DocumentSnapshot> items, int index, String sellerIdFromOrder, String orderId) {
         if (index >= items.size()) {
-            Toast.makeText(this, "✅ شكراً! تم إرسال تقييماتك", Toast.LENGTH_SHORT).show();
-            // تحديث الطلب كـ rated
-            db.collection("orders").document(orderId).update("isRated", true);
+            db.collection("orders").document(orderId)
+                    .update("isRated", true)
+                    .addOnSuccessListener(unused -> {
+                        markOrderAsRated(orderId);
+                        Toast.makeText(this, "✅ شكراً! تم إرسال تقييماتك", Toast.LENGTH_SHORT).show();
+                        goToMain();
+                    });
             return;
         }
 
-        DocumentSnapshot item = items.get(index);
-        String productId   = item.getString("productId");
-        String productName = item.getString("productName") != null ? item.getString("productName") : "منتج";
+        DocumentSnapshot item  = items.get(index);
+        String productId       = item.getString("productId");
+        String productName     = item.getString("productName") != null ? item.getString("productName") : "منتج";
 
         android.widget.LinearLayout layout = new android.widget.LinearLayout(this);
         layout.setOrientation(android.widget.LinearLayout.VERTICAL);
@@ -225,13 +228,14 @@ public class Userpro extends AppCompatActivity {
         tvName.setText("قيّم: " + productName);
         tvName.setTextSize(16);
         tvName.setGravity(android.view.Gravity.CENTER);
-        tvName.setPadding(0, 0, 0, 20);
+        tvName.setPadding(0, 0, 0, 10);
 
         TextView tvCount = new TextView(this);
         tvCount.setText((index + 1) + " / " + items.size());
         tvCount.setTextSize(12);
         tvCount.setTextColor(0xFF999999);
         tvCount.setGravity(android.view.Gravity.CENTER);
+        tvCount.setPadding(0, 0, 0, 20);
 
         RatingBar ratingBar = new RatingBar(this);
         ratingBar.setNumStars(5);
@@ -253,70 +257,145 @@ public class Userpro extends AppCompatActivity {
                 .setView(layout)
                 .setPositiveButton("التالي ➡", (dialog, which) -> {
                     float rating = ratingBar.getRating();
-                    if (productId != null) {
-                        submitRatingToProduct(productId, sellerId, rating);
+                    if (productId != null && !productId.isEmpty()) {
+                        String cleanProductId = productId.replace("\"", "").trim();
+                        // ✅ اقرأ المنتج من Firestore واحصل على sellerId منه مباشرة
+                        db.collection("products").document(cleanProductId).get()
+                                .addOnSuccessListener(productDoc -> {
+                                    if (productDoc.exists()) {
+                                        // حدّث تقييم المنتج
+                                        double oldRating   = productDoc.getDouble("rating")      != null ? productDoc.getDouble("rating")      : 0;
+                                        long   reviewCount = productDoc.getLong("reviewCount")    != null ? productDoc.getLong("reviewCount")   : 0;
+                                        double newRating   = ((oldRating * reviewCount) + rating) / (reviewCount + 1);
+
+                                        Map<String, Object> updates = new HashMap<>();
+                                        updates.put("rating",      newRating);
+                                        updates.put("reviewCount", reviewCount + 1);
+                                        db.collection("products").document(cleanProductId).update(updates);
+
+                                        // ✅ اقرأ sellerId من المنتج نفسه لو مش موجود في الـ order
+                                        String sellerId = productDoc.getString("sellerId");
+                                        if (sellerId == null || sellerId.isEmpty()) {
+                                            sellerId = sellerIdFromOrder; // fallback
+                                        }
+                                        if (sellerId != null && !sellerId.isEmpty()) {
+                                            updateSellerRating(sellerId, rating, orderId);
+                                        }
+                                    }
+                                    // روح للمنتج التالي
+                                    rateNextProduct(items, index + 1, sellerIdFromOrder, orderId);
+                                })
+                                .addOnFailureListener(e ->
+                                        rateNextProduct(items, index + 1, sellerIdFromOrder, orderId)
+                                );
+                    } else {
+                        rateNextProduct(items, index + 1, sellerIdFromOrder, orderId);
                     }
-                    // انتقل للمنتج التالي
-                    rateNextProduct(items, index + 1, sellerId, orderId);
                 })
                 .setNegativeButton("تخطي", (dialog, which) ->
-                        rateNextProduct(items, index + 1, sellerId, orderId)
+                        rateNextProduct(items, index + 1, sellerIdFromOrder, orderId)
                 )
                 .setCancelable(false)
                 .show();
     }
 
-    // ✅ حفظ التقييم في Firestore وتحديث متوسط المنتج
-    private void submitRatingToProduct(String productId, String sellerId, float rating) {
-        db.collection("products").document(productId).get()
+    // ✅ تحديث تقييم المنتج
+    private void updateProductRating(String productId, float rating) {
+        if (productId == null || productId.isEmpty()) return;
+        String cleanId = productId.replace("\"", "").trim();
+        if (cleanId.isEmpty()) return;
+
+        db.collection("products").document(cleanId).get()
                 .addOnSuccessListener(doc -> {
-                    if (doc.exists()) {
-                        double oldRating = doc.getDouble("rating") != null ? doc.getDouble("rating") : 0;
-                        long reviewCount = doc.getLong("reviewCount") != null ? doc.getLong("reviewCount") : 0;
+                    if (!doc.exists()) return;
+                    double oldRating   = doc.getDouble("rating")      != null ? doc.getDouble("rating")      : 0;
+                    long   reviewCount = doc.getLong("reviewCount")    != null ? doc.getLong("reviewCount")   : 0;
+                    double newRating   = ((oldRating * reviewCount) + rating) / (reviewCount + 1);
 
-                        // احساب المتوسط الجديد
-                        double newRating = ((oldRating * reviewCount) + rating) / (reviewCount + 1);
-
-                        Map<String, Object> updates = new HashMap<>();
-                        updates.put("rating", newRating);
-                        updates.put("reviewCount", reviewCount + 1);
-
-                        db.collection("products").document(productId).update(updates);
-                    }
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put("rating",      newRating);
+                    updates.put("reviewCount", reviewCount + 1);
+                    db.collection("products").document(cleanId).update(updates);
                 });
     }
 
-    // ✅ تقييم البائع (يحدث متوسط تقييمه في داشبورده)
-    private void submitRatingToSeller(String sellerId, float rating, String orderId) {
-        if (sellerId == null) return;
+    // ✅ تحديث تقييم البائع
+    private void updateSellerRating(String sellerId, float rating, String orderId) {
+        if (sellerId == null || sellerId.isEmpty()) return;
+        db.collection("users").document(sellerId).get()
+                .addOnSuccessListener(doc -> {
+                    if (!doc.exists()) return;
+                    double oldRating   = doc.getDouble("rating")      != null ? doc.getDouble("rating")      : 0;
+                    long   reviewCount = doc.getLong("reviewCount")    != null ? doc.getLong("reviewCount")   : 0;
+                    double newRating   = ((oldRating * reviewCount) + rating) / (reviewCount + 1);
 
-        // حفظ التقييم في collection مستقلة
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put("rating",      newRating);
+                    updates.put("reviewCount", reviewCount + 1);
+                    db.collection("users").document(sellerId).update(updates);
+
+                    Map<String, Object> review = new HashMap<>();
+                    review.put("sellerId", sellerId);
+                    review.put("userId",   userId);
+                    review.put("orderId",  orderId);
+                    review.put("rating",   rating);
+                    review.put("type",     "seller");
+                    db.collection("reviews").add(review);
+                });
+    }
+    // ✅ submitRating للطلب العام (بدون items) — يحدث البائع والطلب
+    private void submitRating(String sellerId, float rating, String orderId) {
+        // 1️⃣ حدّث تقييم البائع
+        if (sellerId != null && !sellerId.isEmpty()) {
+            updateSellerRating(sellerId, rating, orderId);
+        }
+
+        // 2️⃣ سجّل الـ review وحدّث الطلب
         Map<String, Object> review = new HashMap<>();
-        review.put("sellerId", sellerId);
-        review.put("userId", userId);
-        review.put("orderId", orderId);
-        review.put("rating", rating);
+        review.put("sellerId", sellerId != null ? sellerId : "");
+        review.put("userId",   userId);
+        review.put("orderId",  orderId);
+        review.put("rating",   rating);
+        review.put("type",     "order");
 
         db.collection("reviews").add(review)
-                .addOnSuccessListener(ref -> {
-                    // تحديث الطلب كـ rated
-                    db.collection("orders").document(orderId).update("isRated", true);
-                    Toast.makeText(this, "✅ شكراً! تم إرسال تقييمك", Toast.LENGTH_SHORT).show();
-                    loadOrders(); // تحديث القائمة
-                });
+                .addOnSuccessListener(ref ->
+                        db.collection("orders").document(orderId)
+                                .update("isRated", true)
+                                .addOnSuccessListener(unused -> {
+                                    markOrderAsRated(orderId);
+                                    Toast.makeText(this, "✅ شكراً! تم إرسال تقييمك", Toast.LENGTH_SHORT).show();
+                                    goToMain();
+                                })
+                )
+                .addOnFailureListener(e ->
+                        db.collection("orders").document(orderId)
+                                .update("isRated", true)
+                                .addOnSuccessListener(unused -> {
+                                    markOrderAsRated(orderId);
+                                    Toast.makeText(this, "✅ تم إرسال تقييمك", Toast.LENGTH_SHORT).show();
+                                    goToMain();
+                                })
+                );
     }
 
-    // ── Adapter للطلبات ────────────────────────────────────────────────────────
+    private void goToMain() {
+        Intent intent = new Intent(Userpro.this, Userpro.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+        finish();
+    }
+
+    // ── Adapter للطلبات ──────────────────────────────────────────────────────
     class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.OrderViewHolder> {
 
         @NonNull
         @Override
         public OrderViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            // بناء الـ item يدوياً
             android.widget.LinearLayout layout = new android.widget.LinearLayout(Userpro.this);
             layout.setOrientation(android.widget.LinearLayout.VERTICAL);
             layout.setPadding(32, 24, 32, 24);
-            layout.setBackgroundColor(0xFFF9F9F9);
+            layout.setBackgroundColor(0xFFFFFFFF);
 
             android.widget.LinearLayout.LayoutParams lp =
                     new android.widget.LinearLayout.LayoutParams(
@@ -324,7 +403,6 @@ public class Userpro extends AppCompatActivity {
                             android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
             lp.setMargins(0, 0, 0, 16);
             layout.setLayoutParams(lp);
-            layout.setElevation(4);
 
             return new OrderViewHolder(layout);
         }
@@ -333,11 +411,11 @@ public class Userpro extends AppCompatActivity {
         public void onBindViewHolder(@NonNull OrderViewHolder holder, int position) {
             Map<String, Object> order = ordersList.get(position);
 
-            String sellerName   = order.get("sellerName") != null ? order.get("sellerName").toString() : "-";
-            Object total        = order.get("totalAmount");
-            Object status       = order.get("status");
-            Object payment      = order.get("paymentMethod");
-            boolean isRated     = Boolean.TRUE.equals(order.get("isRated"));
+            String sellerName = order.get("sellerName") != null ? order.get("sellerName").toString() : "-";
+            Object total      = order.get("totalAmount");
+            Object status     = order.get("status");
+            Object payment    = order.get("paymentMethod");
+            boolean isRated   = Boolean.TRUE.equals(order.get("isRated"));
 
             holder.tvSeller.setText("🏪 " + sellerName);
             holder.tvTotal.setText(total != null ?
@@ -345,12 +423,20 @@ public class Userpro extends AppCompatActivity {
             holder.tvStatus.setText("paid".equals(status) ? "مدفوع ✅" : "معلق ⏳");
             holder.tvPayment.setText(payment != null ? "الدفع: " + payment : "");
 
-            if (isRated) {
-                holder.btnRate.setText("تم التقييم ⭐");
-                holder.btnRate.setEnabled(false);
-                holder.btnRate.setBackgroundTintList(
-                        android.content.res.ColorStateList.valueOf(0xFFCCCCCC));
+            // ✅ عرض تقييم البائع إن وجد
+            Object sellerRating = order.get("sellerRating");
+            if (sellerRating != null) {
+                holder.tvSellerRating.setVisibility(View.VISIBLE);
+                holder.tvSellerRating.setText(
+                        String.format("⭐ تقييم البائع: %.1f", ((Number) sellerRating).doubleValue()));
             } else {
+                holder.tvSellerRating.setVisibility(View.GONE);
+            }
+
+            if (isRated) {
+                holder.btnRate.setVisibility(View.GONE);
+            } else {
+                holder.btnRate.setVisibility(View.VISIBLE);
                 holder.btnRate.setText("قيّم الطلب ⭐");
                 holder.btnRate.setEnabled(true);
                 holder.btnRate.setBackgroundTintList(
@@ -365,25 +451,25 @@ public class Userpro extends AppCompatActivity {
         public int getItemCount() { return ordersList.size(); }
 
         class OrderViewHolder extends RecyclerView.ViewHolder {
-            TextView tvSeller, tvTotal, tvStatus, tvPayment;
+            TextView tvSeller, tvTotal, tvStatus, tvPayment, tvSellerRating;
             Button btnRate;
 
             OrderViewHolder(@NonNull View itemView) {
                 super(itemView);
                 android.widget.LinearLayout root = (android.widget.LinearLayout) itemView;
 
-                tvSeller  = new TextView(Userpro.this);
+                tvSeller = new TextView(Userpro.this);
                 tvSeller.setTextSize(15);
                 tvSeller.setTextColor(0xFF1B1B1B);
                 tvSeller.setTypeface(null, android.graphics.Typeface.BOLD);
                 tvSeller.setGravity(android.view.Gravity.END);
 
-                tvTotal   = new TextView(Userpro.this);
+                tvTotal = new TextView(Userpro.this);
                 tvTotal.setTextSize(14);
                 tvTotal.setTextColor(0xFF2E7D32);
                 tvTotal.setGravity(android.view.Gravity.END);
 
-                tvStatus  = new TextView(Userpro.this);
+                tvStatus = new TextView(Userpro.this);
                 tvStatus.setTextSize(13);
                 tvStatus.setTextColor(0xFF555555);
                 tvStatus.setGravity(android.view.Gravity.END);
@@ -393,8 +479,14 @@ public class Userpro extends AppCompatActivity {
                 tvPayment.setTextColor(0xFF888888);
                 tvPayment.setGravity(android.view.Gravity.END);
 
+                // ✅ جديد: عرض تقييم البائع
+                tvSellerRating = new TextView(Userpro.this);
+                tvSellerRating.setTextSize(13);
+                tvSellerRating.setTextColor(0xFFF57F17);
+                tvSellerRating.setGravity(android.view.Gravity.END);
+                tvSellerRating.setVisibility(View.GONE);
+
                 btnRate = new Button(Userpro.this);
-                btnRate.setText("قيّم الطلب ⭐");
                 btnRate.setTextColor(0xFFFFFFFF);
                 android.widget.LinearLayout.LayoutParams btnParams =
                         new android.widget.LinearLayout.LayoutParams(
@@ -407,6 +499,7 @@ public class Userpro extends AppCompatActivity {
                 root.addView(tvTotal);
                 root.addView(tvStatus);
                 root.addView(tvPayment);
+                root.addView(tvSellerRating); // ← جديد
                 root.addView(btnRate);
             }
         }

@@ -58,7 +58,6 @@ public class Checkout extends AppCompatActivity {
             userId = mAuth.getCurrentUser().getUid();
         }
 
-        // ربط العناصر
         rvOrderItems        = findViewById(R.id.rvOrderItems);
         tvCheckoutTotal     = findViewById(R.id.tvCheckoutTotal);
         etCustomerName      = findViewById(R.id.etCustomerName);
@@ -82,7 +81,6 @@ public class Checkout extends AppCompatActivity {
 
         btnBackCheckout.setOnClickListener(v -> finish());
 
-        // اختيار طريقة الدفع
         layoutCash.setOnClickListener(v -> {
             rbCash.setChecked(true);
             rbOnline.setChecked(false);
@@ -97,7 +95,6 @@ public class Checkout extends AppCompatActivity {
             layoutCash.setBackgroundColor(0xFFF5F5F5);
         });
 
-        // تأكيد الطلب
         btnConfirmOrder.setOnClickListener(v -> confirmOrder());
     }
 
@@ -116,7 +113,6 @@ public class Checkout extends AppCompatActivity {
                     }
                     orderAdapter.notifyDataSetChanged();
 
-                    // تحميل بيانات المستخدم تلقائياً
                     db.collection("users").document(userId).get()
                             .addOnSuccessListener(doc -> {
                                 if (doc.exists()) {
@@ -134,7 +130,6 @@ public class Checkout extends AppCompatActivity {
         String phone   = etCustomerPhone.getText().toString().trim();
         String address = etCustomerAddress.getText().toString().trim();
 
-        // التحقق من الحقول
         if (name.isEmpty()) {
             etCustomerName.setError("الرجاء إدخال الاسم");
             etCustomerName.requestFocus();
@@ -152,24 +147,20 @@ public class Checkout extends AppCompatActivity {
         }
 
         if (rbOnline.isChecked()) {
-            // انتقل لصفحة بوابة الدفع
             Intent intent = new Intent(Checkout.this, Payment.class);
             intent.putExtra("totalPrice", totalPrice);
             intent.putExtra("customerName", name);
             intent.putExtra("customerPhone", phone);
             intent.putExtra("customerAddress", address);
             startActivity(intent);
-
         } else {
-            // ✅ دفع نقداً — طلب منفصل لكل بائع
             saveOrdersGroupedBySeller(name, phone, address, "نقداً");
         }
     }
 
-    // ✅ دالة جديدة: تجمّع المنتجات حسب البائع وتحفظ طلب لكل بائع
     private void saveOrdersGroupedBySeller(String name, String phone, String address, String paymentMethod) {
 
-        // 1. جمّع المنتجات حسب sellerId
+        // 1️⃣ جمّع المنتجات حسب sellerId
         Map<String, List<Map<String, Object>>> ordersBySeller = new HashMap<>();
         for (Map<String, Object> item : orderItems) {
             String sid = item.get("sellerId") != null ? item.get("sellerId").toString() : "unknown";
@@ -179,12 +170,11 @@ public class Checkout extends AppCompatActivity {
             ordersBySeller.get(sid).add(item);
         }
 
-        // 2. احفظ طلب منفصل لكل بائع
+        // 2️⃣ احفظ طلب منفصل لكل بائع + items subcollection
         for (Map.Entry<String, List<Map<String, Object>>> entry : ordersBySeller.entrySet()) {
             String sellerId = entry.getKey();
             List<Map<String, Object>> items = entry.getValue();
 
-            // احسب المجموع لهذا البائع
             double sellerTotal = 0;
             for (Map<String, Object> item : items) {
                 if (item.get("price") instanceof Number) {
@@ -192,26 +182,50 @@ public class Checkout extends AppCompatActivity {
                 }
             }
 
-            // اسم البائع من أول منتج
             String sellerName = items.get(0).get("sellerName") != null
                     ? items.get(0).get("sellerName").toString() : "-";
 
             Map<String, Object> order = new HashMap<>();
-            order.put("userId", userId);
-            order.put("sellerId", sellerId);           // ✅ مهم
-            order.put("sellerName", sellerName);
-            order.put("customerName", name);
-            order.put("customerPhone", phone);
-            order.put("customerAddress", address);
-            order.put("paymentMethod", paymentMethod);
-            order.put("totalAmount", sellerTotal);
-            order.put("itemCount", items.size());
-            order.put("status", "paid");
+            order.put("userId",           userId);
+            order.put("sellerId",         sellerId);
+            order.put("sellerName",       sellerName);
+            order.put("customerName",     name);
+            order.put("customerPhone",    phone);
+            order.put("customerAddress",  address);
+            order.put("paymentMethod",    paymentMethod);
+            order.put("totalAmount",      sellerTotal);
+            order.put("itemCount",        items.size());
+            order.put("status",           "paid");
+            order.put("isRated",          false);
 
-            db.collection("orders").add(order);
+            // ✅ احفظ الطلب الرئيسي أولاً، ثم احفظ كل منتج كـ subcollection
+            db.collection("orders").add(order)
+                    .addOnSuccessListener(orderRef -> {
+                        // ✅ هذا هو الجزء المهم — بدونه التقييم ما يشتغل
+                        for (Map<String, Object> item : items) {
+                            Map<String, Object> itemData = new HashMap<>();
+
+                            // productId — مهم جداً للتقييم
+                            itemData.put("productId",   item.get("productId") != null
+                                    ? item.get("productId").toString() : "");
+
+                            // productName — يظهر في dialog التقييم
+                            itemData.put("productName", item.get("productName") != null
+                                    ? item.get("productName").toString() : "منتج");
+
+                            itemData.put("price",       item.get("price"));
+                            itemData.put("quantity",    item.get("quantity") != null
+                                    ? item.get("quantity") : 1);
+                            itemData.put("sellerId",    sellerId);
+                            itemData.put("sellerName",  sellerName);
+
+                            // احفظ كل منتج داخل orders/{orderId}/items/
+                            orderRef.collection("items").add(itemData);
+                        }
+                    });
         }
 
-        // 3. احذف السلة
+        // 3️⃣ احذف السلة
         for (String docId : cartDocIds) {
             db.collection("cart").document(docId).delete();
         }
@@ -226,22 +240,22 @@ public class Checkout extends AppCompatActivity {
         finish();
     }
 
-    // ── Order Items Adapter ───────────────────────────────────────────────────
+    // ── Adapter ──────────────────────────────────────────────────────────────
     class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.ViewHolder> {
 
         @NonNull
         @Override
         public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(Checkout.this).inflate(
-                    android.R.layout.simple_list_item_2, parent, false);
+            View view = LayoutInflater.from(Checkout.this)
+                    .inflate(android.R.layout.simple_list_item_2, parent, false);
             return new ViewHolder(view);
         }
 
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             Map<String, Object> item = orderItems.get(position);
-            Object itemName  = item.get("productName");
-            Object price     = item.get("price");
+            Object itemName = item.get("productName");
+            Object price    = item.get("price");
             holder.text1.setText(itemName != null ? itemName.toString() : "منتج");
             holder.text2.setText(price != null ?
                     String.format("%.2f JD", ((Number) price).doubleValue()) : "0 JD");
