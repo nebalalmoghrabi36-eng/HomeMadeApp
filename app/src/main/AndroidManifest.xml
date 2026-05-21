@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.HomeMade">
         <activity
+            android:name=".ChatBot"
+            android:exported="false" />
+        <activity
             android:name=".AllOrders"
             android:exported="false" />
         <activity
@@ -43,9 +46,6 @@
             android:exported="false" />
         <activity
             android:name=".rig"
-            android:exported="false" />
-        <activity
-            android:name=".JoinSeller"
             android:exported="false" />
         <activity
             android:name=".BrowseProducts"

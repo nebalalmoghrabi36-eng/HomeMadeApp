@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.homemade.adapters.ProductAdapter;
 import com.example.homemade.models.Product;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -30,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private ProductAdapter productAdapter;
     private List<Product> productList;
+
+    private FloatingActionButton fabChatbot;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
         catDecor           = findViewById(R.id.catDecor);
         catKids            = findViewById(R.id.catKids);
         catGifts           = findViewById(R.id.catGifts);
+        fabChatbot         = findViewById(R.id.fabChatbot);
     }
 
     private void setupRecyclerView() {
@@ -131,6 +135,10 @@ public class MainActivity extends AppCompatActivity {
         tvSeeAll.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, BrowseProducts.class))
         );
+        fabChatbot.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, ChatBot.class))
+        );
+
 
         btnCart.setOnClickListener(v -> {
             if (FirebaseAuth.getInstance().getCurrentUser() != null) {

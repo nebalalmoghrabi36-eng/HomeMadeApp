@@ -1,13 +1,15 @@
-<LinearLayout
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:layoutDirection="rtl"
     android:id="@+id/main">
+
     <!--  ===== TOOLBAR ثابت فوق =====  -->
     <LinearLayout
+        android:id="@+id/toolbarLayout"
         android:layout_width="match_parent"
         android:layout_height="64dp"
         android:background="#FFFFFF"
@@ -15,7 +17,9 @@
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="16dp"
-        android:paddingEnd="16dp">
+        android:paddingEnd="16dp"
+        android:layout_alignParentTop="true">
+
         <!--  اليمين: اسم التطبيق  -->
         <TextView
             android:layout_width="0dp"
@@ -26,6 +30,7 @@
             android:textSize="17sp"
             android:textStyle="bold"
             android:gravity="right"/>
+
         <!--  اليسار: سلة + زر دخول  -->
         <TextView
             android:id="@+id/btnCart"
@@ -34,6 +39,7 @@
             android:text="🛒"
             android:textSize="22sp"
             android:layout_marginEnd="12dp"/>
+
         <Button
             android:id="@+id/btnLogin"
             android:layout_width="wrap_content"
@@ -46,19 +52,22 @@
             android:paddingEnd="16dp"
             style="@style/Widget.MaterialComponents.Button"/>
     </LinearLayout>
+
     <!--  ===== المحتوى القابل للسكرول =====  -->
+    <!-- تم تعديل الخصائص لتبدأ من تحت التولبار وتملأ الشاشة -->
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbarLayout"
         android:background="#F5F5F5"
         android:fillViewport="true">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
+
             <!--  HERO SECTION  -->
-            <!--  STATS  -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="260dp"
@@ -120,6 +129,7 @@
                 </LinearLayout>
             </LinearLayout>
 
+            <!--  STATS  -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -247,6 +257,7 @@
                         android:textSize="12sp"/>
                 </LinearLayout>
             </LinearLayout>
+
             <!--  CATEGORIES  -->
             <LinearLayout
                 android:layout_width="match_parent"
@@ -434,6 +445,7 @@
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
+
             <!--  FEATURED PRODUCTS  -->
             <LinearLayout
                 android:layout_width="match_parent"
@@ -475,6 +487,7 @@
                     android:layout_height="wrap_content"
                     android:nestedScrollingEnabled="false"/>
             </LinearLayout>
+
             <!--  WHY HOMEMADE  -->
             <LinearLayout
                 android:layout_width="match_parent"
@@ -622,4 +635,21 @@
             </LinearLayout>
         </LinearLayout>
     </ScrollView>
-</LinearLayout>
+
+    <!-- ===== زر الشات بوت العائم والثابت (FAB) ===== -->
+    <!-- تم تغيير layout_alignParentStart إلى layout_alignParentEnd لتصبح جهة اليمين -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabChatbot"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="16dp"
+        android:backgroundTint="#2E7D32"
+        android:contentDescription="Chatbot"
+        app:srcCompat="@android:drawable/stat_notify_chat"
+        app:tint="#FFFFFF"
+        app:fabSize="normal"
+        android:elevation="8dp"/>
+
+</RelativeLayout>
